@@ -7,12 +7,11 @@ import ContactUs from "./components/ContactUs/ContactUs";
 import Login from "./components/Login/Login";
 import { useContext, useState } from "react";
 import { Context } from "./main";
+import ProductData from "./components/Product/ProductData";
 
 const  App = () => {
 
-  const {isAuthorized, setIsAuthorized, setUser} = useContext(Context)
-
-  
+  const {isAuthorized, setIsAuthorized, setUser} = useContext(Context)  
   return (
     <>      
       <BrowserRouter>
@@ -23,9 +22,10 @@ const  App = () => {
           <Route path="/product" element={isAuthorized ? <Product />: <Navigate to="/login" />}/>
           <Route path="/user" element={isAuthorized ? <User /> : <Navigate to="/login" />}/>
           <Route path="/contact" element={isAuthorized ? <ContactUs /> : <Navigate to="/login" />}/>
-          
+          <Route path="/product/:id" element={<ProductData />}/>
         </Routes>
       </BrowserRouter>
+      
     </>
   )
 }

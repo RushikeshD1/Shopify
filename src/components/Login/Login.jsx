@@ -1,76 +1,115 @@
 import React, { useState, useContext } from 'react';
 import { Context } from '../../main';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [loggedUser, setLoggedUser] = useState(JSON.parse(localStorage.getItem("loggedUser")) || {});
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [toggleClick, setToggleClicked] = useState(false);
 
   const { isAuthorized, setIsAuthorized, setUser } = useContext(Context);
 
   const navigate = useNavigate()
 
   const handleCreateUser = () => {
-    const user = { username, password };    
-    localStorage.setItem('user', JSON.stringify(user));
-    setUser(user);  
+    const newUser = { email, password }; 
+    
+    const existingUser = JSON.parse(localStorage.getItem("users")) || []
+
+    const alreadyUser = existingUser.some(user => user.email === email)
+    
+    if(alreadyUser){
+      toast.error("User already exists!")
+      return
+    }
+    
+    existingUser.push(newUser);
+
+    localStorage.setItem('users', JSON.stringify(existingUser));
+    setUser(existingUser);      
+    toast.success("User created successfully!")
+    setName("")
+    setEmail("")
+    setPassword("")
   };
 
   const handleLogin = () => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    
-    if (storedUser && storedUser.username === username && storedUser.password === password) {
-      setIsAuthorized(true);
-      navigate("/"); 
-    } else {
-      alert('Invalid username or password');
+    const storedUser = localStorage.getItem("users")
+
+    if(!storedUser){
+      toast.error("Invalid email or password")
+      return
     }
+
+    const user = storedUser ? JSON.parse(storedUser) : []
+
+    const matchedUser = user.find(user => user.email === email && user.password === password)
+
+    if(matchedUser){
+      localStorage.setItem("loggedUser", JSON.stringify(matchedUser))
+      setLoggedUser(matchedUser)
+
+      localStorage.setItem("isAuthorized", true)
+      setIsAuthorized(true)
+
+      
+      toast.success("Login succesful!")
+      navigate("/")
+
+      setEmail('')
+      setPassword('')
+
+    }else{
+      setIsAuthorized(false)
+      toast.error("Invalid email or password.")
+    }    
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
-        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
-        <form onSubmit={(e) => e.preventDefault()}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Username:</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter Username"
+    <>
+      <div className='flex flex-col justify-center items-center min-h-screen  mx-auto p-4'>
+        <div className='flex flex-row justify-center border border-gray-300 rounded-md'>
+          {/* Left side */}
+          <div className='flex flex-col gap-4 p-5'>
+            <p className='text-3xl text-black font-semibold'>Welcome back to Shopify Login</p>
+            <span className='text-gray-500'>Its good to have you back!</span>
+            
+            <div className='flex flex-col gap-2'>
+              <label className='font-semibold' htmlFor="email">Email:</label>
+              <input type="email" placeholder='Enter your email here...'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className='outline-none border bg-gray-300 px-2 py-1 rounded-md'
+              />
+            </div>
+            <div className='flex flex-col gap-2'>
+              <label className='font-semibold' htmlFor="password">Password:</label>
+              <input type="password" placeholder='Enter your password here...'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className='outline-none border bg-gray-300 px-2 py-1 rounded-md'
+              />
+            </div>
+            <div className='flex gap-4 justify-center items-center mt-5'>
+              <button onClick={handleLogin} className='bg-pink-600 text-white rounded-md px-3 py-1'>Login</button>
+              <button onClick={handleCreateUser} className='text-pink-600 border border-pink-600 rounded-md px-2 py-1'>Create Account</button>
+            </div>
+          </div>
+          
+          {/* Right side */}
+          <div className='md:block hidden'>
+            <img 
+            src="https://www.justgeek.fr/wp-content/uploads/2023/01/generateur-image-ia-gratuit.jpg"
+             alt="login image" 
+              className='w-[500px] h-[380px] rounded-tr-md rounded-br-md'
             />
           </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700">Password:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 p-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter Password"
-            />
-          </div>
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={handleCreateUser}
-              className="w-1/2 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
-            >
-              Create
-            </button>
-            <button
-              type="button"
-              onClick={handleLogin}
-              className="w-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
-            >
-              Login
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </>
+   
   );
 };
 

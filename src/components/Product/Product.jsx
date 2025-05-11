@@ -1,21 +1,22 @@
 import React, { use, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
+import ProductData from './ProductData';
 
 const Product = () => {
 
     const [isData, setIsData] = useState([])
     const [isProduct, setIsProduct] = useState([])
 
-    // const productsApi = ["electronic", "jewelery", "men's clothing", "women's clothing"];
+    const navigate = useNavigate()
+
     const getValue = async (e) => {
         let text = e.target.innerText.toLowerCase();
 
         let category = text ? text : "electronic"
         
         const productApi = await axios.get(`https://fakestoreapi.com/products/category/${category}`)
-        // console.log(productApi);
-        
+                        
         setIsProduct(productApi.data);        
     }
 
@@ -29,8 +30,7 @@ const Product = () => {
     };
     
     const api = "https://fakestoreapi.com/products/categories"
-    // const api1 = ``
-
+    
     const fetchApi = async () => {
         try{            
             const response = await axios.get(`${api}`)
@@ -41,9 +41,9 @@ const Product = () => {
                     
     }
 
-    // const allProduct = async () => {
-    //     const response = await axios.get(`${api1}`)
-    // }
+    const handleNavigation = (item) => {
+        navigate(`/product/${item.id}`, { state : { item } })
+    }
 
     useEffect(() => {
         fetchApi(); 
@@ -58,18 +58,18 @@ const Product = () => {
 
     const renderCategory = () => {
         return isProduct.map((item,index) => (
-            <div className=' capitalize cursor-pointer hover:bg-gray-500 p-2 hover:text-white hover:rounded-md' key={index}>{item.title}</div>
+            <li onClick={() => handleNavigation(item)} className='capitalize cursor-pointer hover:bg-gray-500 p-2 hover:text-white hover:rounded-md' key={index}>{item.title}</li>
         ))                
     }
 
   return (
-    <div className='flex flex-row min-h-screen'>
+    <div className='flex md:flex-row flex-col min-h-screen'>
         <div className='w-96 bg-black text-white flex flex-col text-left p-5 justify-start gap-10 px-10 text-2xl font-semibold'>        
             {renderData()}
         </div>
-        <div className='flex gap-8 text-left p-10 justify-start flex-col'>
+        <ul className='flex gap-8 text-left p-10 justify-start flex-col'>
             {renderCategory()}
-        </div>
+        </ul>
     </div>
   ) 
 }
